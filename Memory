@@ -1,0 +1,45 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+
+#Team DyaNAmic
+#Author: Afia Hasnain
+#This program opens a fasta formatted .fa file from a directory named 'data'
+#Directory 'data' is found in the same folder as this perl program
+#This program opens the fasta formatted file and parse the sequence into 120kb sequences
+#starting with '>' at the beginning of each sequence
+#this program prints the output into a file naed output in the same "data" folder. 
+
+    
+opendir my $dh, "data" or die "cant open the directory\n"; #open and read the directory 'data' stored in the same directory as this perl program
+my @list = readdir $dh; #getting the list of all files in the directory 'data' into an array
+my @listfa = grep /\.fa/, @list; #getting the list of all FASTA files ending in .fa, into an array
+    
+foreach (@listfa) { #looping on each FASTA .fa file to format each as follows
+    
+    if (-f "data/$_") {
+        
+        # opening the 'data' into a filehandle 
+        open(my $fh, "<", "data/$_") or die "could not open file $_";   
+        my @lines = <$fh>; #getting all the the lines into an array
+        chomp @lines;
+  
+        my $lines = join "", @lines; #join the all the lines in the FASTA sequence removing new line spaces
+        
+        #using the substitue function to enter a new line and '>' after each 120,000th base (30,000x4)
+        #as the highest quantifier identified by regex is 32,766
+        $lines =~ s/((.{1,30000}){4})/$1\n>/gs;
+        print "$lines\n";
+        
+        #opening a file to write the split fasta sequence in fasta format in the same
+        #directory 'data'   
+        open my $fhd, ">","data/parsed_fasta.fa" or die $!; 
+        print $fhd $lines, "\n"; 
+        close $fhd; #close file handle
+    }
+}
+    
+
+   
+    
